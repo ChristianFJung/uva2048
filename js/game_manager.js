@@ -133,6 +133,29 @@ GameManager.prototype.moveTile = function (tile, cell) {
   tile.updatePosition(cell);
 };
 
+function copyToClipboard(textToCopy) {
+  // navigator clipboard api needs a secure context (https)
+  if (navigator.clipboard && window.isSecureContext) {
+    // navigator clipboard api method'
+    return navigator.clipboard.writeText(textToCopy);
+  } else {
+    // text area method
+    let textArea = document.createElement("textarea");
+    textArea.value = textToCopy;
+    // make the textarea out of viewport
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    return new Promise((res, rej) => {
+      // here the magic happens
+      document.execCommand("copy") ? res() : rej();
+      textArea.remove();
+    });
+  }
+}
 // Move tiles on the grid in the specified direction
 GameManager.prototype.move = function (direction) {
   // 0: up, 1: right, 2: down, 3: left
@@ -194,7 +217,8 @@ GameManager.prototype.move = function (direction) {
 
       var text =
         "" + this.score + " points in UVA 2048! https://bit.ly/uva2048";
-      navigator.clipboard.writeText(text);
+      // navigator.clipboard.writeText(text);
+      copyToClipboard(text);
     }
 
     this.actuate();
